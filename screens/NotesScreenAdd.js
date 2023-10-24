@@ -9,19 +9,21 @@ import {
   TextInput,
   TouchableOpacity,
   View,
+  Pressable,
 } from "react-native";
 
-import { doc, setDoc } from "firebase/firestore";
+import { collection, addDoc } from "firebase/firestore";
 import { db } from "../screens/firebase";
 
-export default function NotesScreenAdd({ route }) {
+export default function NotesScreenAdd() {
   const navigation = useNavigation();
   const [noteTitle, setNoteTitle] = useState("");
-  const val = route.params.value.toString();
+  const [noteDesc, setNoteDesc] = useState("");
 
   async function savePost() {
-    await setDoc(doc(db, "notes", val), {
+    await addDoc(collection(db, "notes"), {
       title: noteTitle,
+      body: noteDesc,
     });
     navigation.goBack();
   }
@@ -39,6 +41,13 @@ export default function NotesScreenAdd({ route }) {
         placeholder={"note title"}
         value={noteTitle}
         onChangeText={(text) => setNoteTitle(text)}
+        selectionColor={"gray"}
+      />
+      <TextInput
+        style={styles.noteBody}
+        placeholder={"description"}
+        value={noteDesc}
+        onChangeText={(text) => setNoteDesc(text)}
         selectionColor={"gray"}
       />
 

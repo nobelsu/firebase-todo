@@ -6,6 +6,7 @@ import {
   Text,
   TouchableOpacity,
   View,
+  Pressable,
 } from "react-native";
 import { FontAwesome } from "@expo/vector-icons";
 import {
@@ -35,12 +36,20 @@ export default function NotesScreenHome() {
   }, []);
 
   function renderItem({ item }) {
+    const id = item.id.toString();
     return (
       <View style={styles.noteCard}>
-        <Text style={styles.noteCardTitle}>{item.title}</Text>
+        <Pressable
+          onPress={() => {
+            navigation.navigate("View", { id });
+          }}
+        >
+          <Text style={styles.noteCardTitle}>{item.title}</Text>
+        </Pressable>
+
         <TouchableOpacity
           onPress={async () => {
-            await deleteDoc(doc(db, "notes", item.id.toString()));
+            await deleteDoc(doc(db, "notes", id));
           }}
         >
           <FontAwesome name={"remove"} size={24} color={"black"} />
