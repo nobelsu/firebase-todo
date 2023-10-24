@@ -1,5 +1,5 @@
 import { useNavigation } from "@react-navigation/native";
-import React from "react";
+import React, { useEffect, useState } from "react";
 import {
   FlatList,
   StyleSheet,
@@ -8,19 +8,41 @@ import {
   View,
 } from "react-native";
 import { FontAwesome } from "@expo/vector-icons";
+import {
+  collection,
+  onSnapshot,
+  query,
+  deleteDoc,
+  doc,
+} from "firebase/firestore";
+import { db } from "../screens/firebase";
 
 export default function NotesScreenHome() {
   const navigation = useNavigation();
+  const [notes, setNotes] = useState([]);
 
-  const posts = [
-    { title: "Add new notes", content: "New notes are everything", id: "1" },
-  ];
+  useEffect(() => {
+    const q = query(collection(db, "notes"));
+    const unsubscribe = onSnapshot(q, (querySnapshot) => {
+      const posts = querySnapshot.docs.map((doc) => {
+        return { ...doc.data(), id: doc.id };
+      });
+      setNotes(posts);
+    });
+    return () => {
+      unsubscribe();
+    };
+  }, []);
 
   function renderItem({ item }) {
     return (
       <View style={styles.noteCard}>
         <Text style={styles.noteCardTitle}>{item.title}</Text>
-        <TouchableOpacity onPress={() => {}}>
+        <TouchableOpacity
+          onPress={async () => {
+            await deleteDoc(doc(db, "notes", item.id.toString()));
+          }}
+        >
           <FontAwesome name={"remove"} size={24} color={"black"} />
         </TouchableOpacity>
       </View>
@@ -31,15 +53,20 @@ export default function NotesScreenHome() {
       <Text style={styles.title}>notes</Text>
 
       <FlatList
-        data={posts}
+        data={notes}
         renderItem={renderItem}
-        keyExtractor={(post) => post.id.toString()}
+        keyExtractor={(post) => {
+          return post.id.toString();
+        }}
       />
 
       <View style={{ flex: 1 }} />
       <TouchableOpacity
         style={styles.button}
-        onPress={() => navigation.navigate("Add")}
+        onPress={() => {
+          const value = notes.length;
+          navigation.navigate("Add", { value });
+        }}
       >
         <Text style={styles.buttonText}>Add</Text>
       </TouchableOpacity>

@@ -11,11 +11,20 @@ import {
   View,
 } from "react-native";
 
-export default function NotesScreenAdd() {
+import { doc, setDoc } from "firebase/firestore";
+import { db } from "../screens/firebase";
+
+export default function NotesScreenAdd({ route }) {
   const navigation = useNavigation();
   const [noteTitle, setNoteTitle] = useState("");
+  const val = route.params.value.toString();
 
-  async function savePost() {}
+  async function savePost() {
+    await setDoc(doc(db, "notes", val), {
+      title: noteTitle,
+    });
+    navigation.goBack();
+  }
 
   return (
     <KeyboardAvoidingView
