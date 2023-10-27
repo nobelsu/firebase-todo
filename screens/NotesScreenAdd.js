@@ -21,11 +21,13 @@ export default function NotesScreenAdd() {
   const [noteDesc, setNoteDesc] = useState("");
 
   async function savePost() {
-    await addDoc(collection(db, "notes"), {
-      title: noteTitle,
-      body: noteDesc,
-    });
-    navigation.goBack();
+    if (noteTitle != "") {
+      await addDoc(collection(db, "notes"), {
+        title: noteTitle,
+        body: noteDesc,
+      });
+      navigation.goBack();
+    }
   }
 
   return (

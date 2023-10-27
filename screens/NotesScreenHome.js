@@ -7,20 +7,26 @@ import {
   TouchableOpacity,
   View,
   Pressable,
+  TextInput,
 } from "react-native";
 import { FontAwesome } from "@expo/vector-icons";
+import Icon from "@mdi/react";
+import { mdiMagnify } from "@mdi/js";
 import {
   collection,
   onSnapshot,
   query,
   deleteDoc,
   doc,
+  where,
 } from "firebase/firestore";
 import { db } from "../screens/firebase";
+import { SearchBar } from "@rneui/themed";
 
 export default function NotesScreenHome() {
   const navigation = useNavigation();
   const [notes, setNotes] = useState([]);
+  const [value, setValue] = useState("");
 
   useEffect(() => {
     const q = query(collection(db, "notes"));
@@ -34,6 +40,23 @@ export default function NotesScreenHome() {
       unsubscribe();
     };
   }, []);
+
+  useEffect(() => {
+    console.log(notes.length);
+    console.log("check");
+
+    const q = query(collection(db, "notes"));
+    onSnapshot(q, (querySnapshot) => {
+      const posts = querySnapshot.docs.map((doc) => {
+        return { ...doc.data(), id: doc.id };
+      });
+      setNotes(
+        posts.filter((post) => {
+          return post.title.toString().includes(value);
+        })
+      );
+    });
+  }, [value]);
 
   function renderItem({ item }) {
     const id = item.id.toString();
@@ -60,6 +83,25 @@ export default function NotesScreenHome() {
   return (
     <View style={styles.container}>
       <Text style={styles.title}>notes</Text>
+
+      <View
+        style={{
+          marginTop: 10,
+          marginBottom: 20,
+          width: "100%",
+          borderWidth: 1,
+          padding: 8,
+        }}
+      >
+        <TextInput
+          value={value}
+          style={{
+            fontSize: 18,
+          }}
+          placeholder={"Search..."}
+          onChangeText={(text) => setValue(text.toString())}
+        />
+      </View>
 
       <FlatList
         data={notes}
@@ -108,7 +150,7 @@ const styles = StyleSheet.create({
   title: {
     fontWeight: "bold",
     fontSize: 40,
-    marginBottom: 20,
+    // marginBottom: 20,
   },
   button: {
     backgroundColor: "black",
